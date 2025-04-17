@@ -18,3 +18,6 @@ __pycache__/
 # Local development files
 .env
 *.env
+
+# Local yml files
+*.yml

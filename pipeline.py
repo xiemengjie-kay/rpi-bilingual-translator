@@ -13,12 +13,15 @@ if __name__ == "__main__":
     print("Transcribed:", transcribed_input)
 
     # Text translation
-    translated_output = t2t.translate_text(
-        transcribed_input, 
-        T2T_SRC_LANG, 
-        T2T_TGT_LANG, 
-        T2T_BEAM_SIZE
-    )
+    # translated_output = t2t.translate_text(
+    #     transcribed_input, 
+    #     T2T_SRC_LANG, 
+    #     T2T_TGT_LANG, 
+    #     T2T_BEAM_SIZE
+    # )
+    # print("Translated:", translated_output)
+    from text_to_text_onnx import translate
+    translated_output = translate(transcribed_input, T2T_SRC_LANG, T2T_TGT_LANG, T2T_BEAM_SIZE)
     print("Translated:", translated_output)
 
     # Text to speech
