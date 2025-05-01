@@ -30,18 +30,23 @@ echo "Activating environment '$ENV_NAME'..."
 conda activate "$ENV_NAME"
 
 # Step 6: Install dependencies using Conda
-echo "Installing dependencies..."
-conda install conda-forge::transformers
-conda install conda-forge::optimum  
-conda install conda-forge::onnxruntime
-conda install conda-forge::onnx
-conda install anaconda::seaborn
-conda install conda-forge::sacrebleu
+conda install -y -c conda-forge \
+    transformers=4.41.0 \
+    optimum=1.20.0 \
+    onnxruntime=1.20.1 \
+    onnx=1.17.0 \
+    seaborn \
+    sacrebleu \
+    sentencepiece \
+    libsndfile \
+    soundfile=0.13.1
 
 # Step 7: Install dependencies using Pip
-pip install ctranslate2
-
-
+pip install \
+    ctranslate2==4.6.0 \
+    faster-whisper==1.1.1 \
+    av==14.3.0 \
+    soxr==0.5.0.post1
 
 # Step 7: Install additional dependencies using pip
 # pip install requests beautifulsoup4

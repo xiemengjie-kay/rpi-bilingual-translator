@@ -48,7 +48,7 @@ references = []
 # In[ ]:
 
 
-for sample in tqdm(dataset["test"].select(range(2)), desc="Translating"):
+for sample in tqdm(dataset["test"], desc="Translating"):
     pred, ref = prepare_batch(sample)
     # print(pred)
     # print(type(pred))
@@ -80,7 +80,7 @@ print(f"\n📈 BLEU Score: {bleu.score:.5f}")
 # In[ ]:
 
 
-for i in range(2):
+for i in range(5):
     print(f"\nExample {i+1}:")
     print(f"English Input: {dataset['test'][i]['translation']['en']}")
     print(f"Reference Chinese: {references[i]}")
