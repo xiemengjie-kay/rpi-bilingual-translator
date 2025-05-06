@@ -142,7 +142,7 @@ def main():
     audio = load_audio(filename)
     transcript = transcribe_audio(audio)
 
-    print("\nFinal Transcript:\n", transcript)
+    print("Final Transcript:\n", transcript)
 
 
 if __name__ == "__main__":
