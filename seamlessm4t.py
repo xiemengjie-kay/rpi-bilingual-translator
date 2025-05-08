@@ -10,6 +10,7 @@ import numpy as np
 import sounddevice as sd
 import soundfile as sf
 import time
+import tempfile
 from scipy.io import wavfile
 from transformers import AutoProcessor, SeamlessM4TModel
 
@@ -17,7 +18,8 @@ DEVICE = "cpu"
 MODEL_NAME = "facebook/hf-seamless-m4t-medium"
 TARGET_LANG = "cmn"  # Mandarin Chinese
 AUDIO_FILE = "mic_input.wav"
-AUDIO_DEVICE = "plughw:0,0"
+AUDIO_INPUT = "plughw:0,0"
+AUDIO_OUTPUT = 0
 
 def record_with_arecord(filename="mic_input.wav", duration=5, device="plughw:0,0"):
     """
@@ -54,8 +56,12 @@ def run_translation(waveform):
 #     return audio
 
 def play_audio(audio_array, sample_rate=16000):
-    sd.play(audio_array, sample_rate)
-    sd.wait() # wait until the audio is complete
+    # sd.default.device = (None, AUDIO_OUTPUT)  # (input device index, output device index)
+    # sd.play(audio_array, sample_rate)
+    # sd.wait() # wait until the audio is complete
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmpfile:
+        sf.write(tmpfile.name, audio_array, sample_rate, subtype='PCM_16')
+        subprocess.run(["aplay", "-D", "plughw:0,0", tmpfile.name], check=True)
 
 # Load processor and model
 processor = AutoProcessor.from_pretrained(MODEL_NAME)
@@ -66,15 +72,15 @@ device = torch.device(DEVICE)
 model.to(device)
 
 def main():
-    record_with_arecord(device=AUDIO_DEVICE)
+    # print(sd.query_devices())
+    record_with_arecord(device=AUDIO_INPUT)
     waveform = load_waveform(AUDIO_FILE)
     start_time = time.perf_counter()
     audio_array_from_audio = run_translation(waveform)
     end_time = time.perf_counter()
     execution_time = end_time - start_time
     print(f"Preprocess and Inference execution time: {execution_time:.4f} seconds")
-    print(audio_array_from_audio)
-    # play_audio(audio_array_from_audio)
+    play_audio(audio_array_from_audio)
 
 
 if __name__ == "__main__":
