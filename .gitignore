@@ -21,3 +21,6 @@ __pycache__/
 
 # Local yml files
 *.yml
+
+# python files
+text_to_text_zh_en.py

@@ -1,6 +1,10 @@
 import ctranslate2
 import sentencepiece as spm
 
+import time
+
+english_text = "This man has spent 25 years leaving with the disastrous mistakes of his past. which has made him an exile in his hometown. and cost him his dearest relationships."
+
 # === Mapping of human-readable language names to FLoRes-200 codes ===
 LANG_CODE_MAP = {
     "English": "eng_Latn",
@@ -45,6 +49,7 @@ def translate_text(input_text: str, source_language: str, target_language: str, 
     if not src_lang or not tgt_lang or not input_text.strip():
         return ""
 
+    start_time = time.time()
     # Tokenize input and prepend source language code
     tokens = sp.encode_as_pieces(input_text.strip())
     tokens = [[src_lang] + tokens + ["</s>"]]
@@ -65,10 +70,14 @@ def translate_text(input_text: str, source_language: str, target_language: str, 
     output_tokens = result[0].hypotheses[0]
     if tgt_lang in output_tokens:
         output_tokens.remove(tgt_lang)
+        
+    text = sp.decode(output_tokens)
+    end_time = time.time()
+    print(f"""Inference time: {end_time-start_time:.2f}s""")
 
-    return sp.decode(output_tokens)
+    return text
 
 # === Sample usage for quick testing ===
 if __name__ == "__main__":
-    output = translate_text("Hey how are you?", "English", "Chinese (Simplified)", beam_size=5)
+    output = translate_text(english_text, "English", "Chinese (Simplified)", beam_size=5)
     print("Translated:", output)
