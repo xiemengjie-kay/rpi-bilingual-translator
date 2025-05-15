@@ -1,0 +1,26 @@
+from transformers import MarianMTModel, MarianTokenizer
+import time
+
+class EnglishToChineseTranslator:
+    def __init__(self, model_name="Helsinki-NLP/opus-mt-en-zh"):
+        self.tokenizer = MarianTokenizer.from_pretrained(model_name)
+        self.model = MarianMTModel.from_pretrained(model_name)
+
+    def __call__(self, english_text):
+        start_time = time.time()
+        inputs = self.tokenizer(english_text, return_tensors="pt", padding=True)
+        translated = self.model.generate(**inputs)
+        res = [self.tokenizer.decode(t, skip_special_tokens=True) for t in translated]
+        end_time = time.time()
+        # print(res)
+        # print(f"Inference time: {end_time - start_time:.2f}s")
+        return ' '.join([text for text in res])
+
+# Example usage:
+if __name__ == "__main__":
+    translator = EnglishToChineseTranslator()
+    english_text = (
+        "This man has spent 25 years leaving with the disastrous mistakes of his past. "
+        "which has made him an exile in his hometown. and cost him his dearest relationships."
+    )
+    translator(english_text)

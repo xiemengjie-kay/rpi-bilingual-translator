@@ -7,10 +7,10 @@
 # # sd.default.device = ('plughw:2,0', None)  # (input, output)
 
 # # Set input device only (output left unchanged)
-# sd.default.device[0] = 'plughw:2,0'
+# # sd.default.device[0] = 'plughw:2,0'
 
 # # === Audio callback: updates a fixed-size rolling buffer with live microphone input ===
-# def update_audio_buffer(indata, outdata, frames, time_info, status):
+# def update_audio_buffer(indata, outdata, frames, time_info, status=False):
 #     global audio_buffer
 #     if status:
 #         print("Sound device error:", status, file=sys.stderr)
@@ -97,53 +97,55 @@ import numpy as np
 from scipy.io import wavfile
 from faster_whisper import WhisperModel
 
+class WhisperRecorder:
+    def __init__(self, filename="mic_input.wav", duration=30, device="plughw:0,0", model_size="tiny", beam_size=5, compute_type="int8"):
+        self.filename = filename
+        self.duration = duration
+        self.device = device
+        self.model_size = model_size
+        self.beam_size = beam_size
+        self.compute_type = compute_type
 
-def record_with_arecord(filename="mic_input.wav", duration=5, device="plughw:2,0"):
-    """
-    Record audio from microphone using arecord.
-    """
-    print(f"🎙 Recording for {duration} seconds...")
-    subprocess.run([
-        "arecord", "-D", device, "-f", "S16_LE", "-r", "16000", "-c", "1",
-        "-d", str(duration), filename
-    ], check=True)
-    print("Recording complete.")
+    def record(self):
+        """
+        Record audio from microphone using arecord.
+        """
+        print(f"🎙 Recording for {self.duration} seconds...")
+        subprocess.run([
+            "arecord", "-D", self.device, "-f", "S16_LE", "-r", "16000", "-c", "1",
+            "-d", str(self.duration), self.filename
+        ], check=True)
+        print("Recording complete.")
 
+    def load_audio(self):
+        """
+        Load audio from WAV file and convert to normalized float32 array.
+        """
+        rate, data = wavfile.read(self.filename)
+        assert rate == 16000, "Expected 16kHz sample rate"
+        audio = data.astype(np.float32) / 32768.0  # Normalize int16 to float32
+        return audio
 
-def load_audio(filename):
-    """
-    Load audio from WAV file and convert to normalized float32 array.
-    """
-    rate, data = wavfile.read(filename)
-    assert rate == 16000, "Expected 16kHz sample rate"
-    audio = data.astype(np.float32) / 32768.0  # Normalize int16 to float32
-    return audio
+    def transcribe(self, audio):
+        """
+        Transcribe given audio array using Faster-Whisper.
+        """
+        print("Transcribing...")
+        model = WhisperModel(self.model_size, device="cpu", compute_type=self.compute_type)
+        segments, _ = model.transcribe(audio, beam_size=self.beam_size)
+        transcript = []
+        for seg in segments:
+            transcript.append(seg.text)
+        # transcript = " ".join([seg.text for seg in segments]).strip()
+        return transcript
 
-
-def transcribe_audio(audio, model_size="tiny", beam_size=5, compute_type="int8"):
-    """
-    Transcribe given audio array using Faster-Whisper.
-    """
-    print("Transcribing...")
-    model = WhisperModel(model_size, device="cpu", compute_type=compute_type)
-    segments, _ = model.transcribe(audio, beam_size=beam_size)
-    transcript = " ".join([seg.text for seg in segments]).strip()
-    return transcript
-
-
-def main():
-    # Parameters
-    filename = "mic_input.wav"
-    duration = 5  # seconds
-    device = "plughw:2,0"
-
-    # Record and transcribe
-    record_with_arecord(filename, duration, device)
-    audio = load_audio(filename)
-    transcript = transcribe_audio(audio)
-
-    print("Final Transcript:\n", transcript)
-
+    def run(self):
+        self.record()
+        audio = self.load_audio()
+        transcript = self.transcribe(audio)
+        # print("Final Transcript:\n", transcript)
+        return transcript
 
 if __name__ == "__main__":
-    main()
+    wr = WhisperRecorder()
+    wr.run()
