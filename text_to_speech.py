@@ -6,19 +6,13 @@ import wave
 from piper.voice import PiperVoice
 
 class TextToSpeech:
-    def __init__(self, voice_path="./piper_models/zh_CN-huayan-medium.onnx",
-                 config_path="./piper_models/zh_CN-huayan-medium.onnx.json"):
-        """
-        Initialize the TTS engine with the given model and config paths.
-        """
+    def __init__(self, voice_path="./piper_models/en_US-hfc_male-medium.onnx",
+                 config_path="./piper_models/en_US-hfc_male-medium.onnx.json"):
         self.voice_path = voice_path
         self.config_path = config_path
         self.voice = self.init_tts(self.voice_path, self.config_path)
 
     def init_tts(self, voice_path, config_path):
-        """
-        Load and return a PiperVoice instance from model and config files.
-        """
         try:
             return PiperVoice.load(voice_path, config_path)
         except Exception as e:
@@ -26,18 +20,11 @@ class TextToSpeech:
             return None
 
     def set_voice(self, voice_path, config_path):
-        """
-        Change the voice model and config.
-        """
         self.voice_path = voice_path
         self.config_path = config_path
         self.voice = self.init_tts(self.voice_path, self.config_path)
 
     def synthesize_audio(self, text):
-        """
-        Convert input text to float32 audio by synthesizing to a temporary WAV file,
-        then reading and normalizing the output.
-        """
         if not text.strip() or self.voice is None:
             return None, None
         try:
@@ -64,9 +51,6 @@ class TextToSpeech:
             return None, None
 
     def play_audio(self, audio, sample_rate):
-        """
-        Play the normalized audio buffer using sounddevice.
-        """
         if audio is not None and sample_rate is not None:
             try:
                 sd.play(audio, samplerate=sample_rate, blocking=True)
@@ -74,9 +58,6 @@ class TextToSpeech:
                 print(f"[AUDIO ERROR] {e}")
 
     def speak(self, text):
-        """
-        Run the full text-to-speech pipeline: synthesize and play audio.
-        """
         audio, sample_rate = self.synthesize_audio(text)
         if audio is not None and sample_rate is not None:
             self.play_audio(audio, sample_rate)
@@ -84,7 +65,4 @@ class TextToSpeech:
 
 if __name__ == "__main__":
     tts = TextToSpeech()
-    tts.speak("你好，你今天怎么样")
-    # To change voice:
-    # tts.set_voice("path/to/other/model.onnx", "path/to/other/model.onnx.json")
-    # tts.speak("用新声音说话")
+    tts.speak("hello, how are you doing today?")
