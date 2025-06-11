@@ -1,0 +1,24 @@
+# Ignore model folders
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# macOS files
+.DS_Store
+._*
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Local development files
+.env
+*.env
+
+# Local yml files
+*.yml
+
+# python files
+text_to_text_zh_en.py
